@@ -63,6 +63,7 @@ public class NewIssuesPostJob implements PostJob {
 		return Severity.ALL.indexOf(severity) >= index;
 	}
 
+	@SuppressWarnings("deprecation")
 	public Notification createNotification(Project project,
 			SensorContext context, Issue issue) {
 
@@ -121,6 +122,7 @@ public class NewIssuesPostJob implements PostJob {
 		return map.get(line);
 	}
 
+	@SuppressWarnings("deprecation")
 	protected Integer getLastRevisionLine(SensorContext context,
 			Resource resource) {
 		Measure<String> measureDates = (Measure<String>) context.getMeasure(

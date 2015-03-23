@@ -19,6 +19,7 @@ public final class CruSonPlugin extends SonarPlugin {
 	public static final String CRUSON_REPOSITORY = "cruson.crucible.repository";
 	public static final String CRUSON_SEVERITY = "cruson.severity";
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public List getExtensions() {
 		return ImmutableList.of(
@@ -62,6 +63,9 @@ public final class CruSonPlugin extends SonarPlugin {
 		        .build(),
 			NewIssuesPostJob.class,
 			NewIssuesNotificationDispatcher.class,
-			CrucibleNotificationChannel.class);
+			CrucibleNotificationChannel.class,
+			HttpDownloadImpl.class,
+			CrucibleApiImpl.class
+			);
 	}
 }
