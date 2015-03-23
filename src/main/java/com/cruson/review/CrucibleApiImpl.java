@@ -16,7 +16,7 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 	protected static final String LINK_REVIEW_REVIEWER = "/rest-service/reviews-v1/%s/reviewers";
 	protected static final String LINK_REVIEW_ITEM = "/rest-service/reviews-v1/%s/reviewitems";
 	protected static final String LINK_REVIEW_COMMENT = "/rest-service/reviews-v1/%s/reviewitems/%s/comments";
-	protected static final String LINK_REVIEW_STATE = "/rest-service/reviews-v1/{id}/transition?action=";
+	protected static final String LINK_REVIEW_STATE = "/rest-service/reviews-v1/%s/transition?action=";
 	protected static final String LINK_REVIEW_START = LINK_REVIEW_STATE
 			+ "action:approveReview";
 
