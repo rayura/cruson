@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.sonar.api.batch.SensorContext;
+import org.sonar.api.batch.DecoratorContext;
 import org.sonar.api.config.Settings;
 import org.sonar.api.issue.internal.DefaultIssue;
 import org.sonar.api.measures.CoreMetrics;
@@ -32,7 +32,7 @@ import org.sonar.api.rule.RuleKey;
 import org.sonar.batch.issue.IssueCache;
 
 @RunWith(MockitoJUnitRunner.class)
-public class NewIssuesPostJobTest {
+public class NewIssueResourceDecoratorTest {
 
 	private static final String TEST_DATES = "1=2015-03-10T15:55:46+0200;"
 			+ "2=2015-03-10T15:55:46+0200;" + "3=2015-03-10T15:55:46+0200;"
@@ -45,7 +45,7 @@ public class NewIssuesPostJobTest {
 			+ "16=2015-03-10T15:55:46+0200";
 
 	@Mock
-	private SensorContext context;
+	private DecoratorContext context;
 
 	private Project project = new Project(NotificationFields.PROJECT_KEY);
 
@@ -66,7 +66,7 @@ public class NewIssuesPostJobTest {
 
 	private Measure<String> dateMeasure;
 
-	private NewIssuesPostJob job;
+	private NewIssueResourceDecorator decorator;
 
 	@Before
 	public void setUp() {
@@ -75,26 +75,29 @@ public class NewIssuesPostJobTest {
 		Settings settings = new Settings();
 		settings.setProperties(properties);
 
-		job = new NewIssuesPostJob(settings, issueCache, manager);
-		job = Mockito.spy(job);
+		decorator = new NewIssueResourceDecorator(settings, issueCache, manager);
+		decorator = Mockito.spy(decorator);
 		dateMeasure = new Measure<>(
 				CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, TEST_DATES);
 
+		project.setPath("module");
 	}
 
 	@Test
 	public void testExecuteOn() throws Exception {
 		List<DefaultIssue> issues = Arrays.asList(new DefaultIssue[] { issue,
 				issue1 });
-		when(issueCache.all()).thenReturn(issues);
-		when(job.supports(issue)).thenReturn(false);
-		when(job.supports(issue1)).thenReturn(true);
+		String key = "key";
+		when(resource.getEffectiveKey()).thenReturn(key);
+		when(issueCache.byComponent(key)).thenReturn(issues);
+		when(decorator.supports(issue)).thenReturn(false);
+		when(decorator.supports(issue1)).thenReturn(true);
 		Notification notification = new Notification("");
-		doReturn(notification).when(job).createNotification(project, context,
+		doReturn(notification).when(decorator).createNotification(context,
 				issue1);
 		doNothing().when(manager).scheduleForSending(eq(notification));
 
-		job.executeOn(project, context);
+		decorator.decorate(resource, context);
 
 		verify(manager).scheduleForSending(eq(notification));
 	}
@@ -102,34 +105,42 @@ public class NewIssuesPostJobTest {
 	@Test
 	public void testCreateNotification() throws Exception {
 		Integer line = new Integer(5);
-		when(issue.componentKey()).thenReturn(
-				NotificationFields.PROJECT_KEY + ":"
-						+ NotificationFields.COMPONENT_KEY);
+		Integer lastLine = new Integer(2);
+		String componentPath = "componentPath";
+
+		when(context.getProject()).thenReturn(project);
+		when(context.getResource()).thenReturn(resource);
+		when(resource.getPath()).thenReturn(componentPath);
 		when(issue.severity()).thenReturn(NotificationFields.SEVERITY);
 		when(issue.message()).thenReturn(NotificationFields.MESSAGE);
-		when(issue.line()).thenReturn(line);
 		when(issue.ruleKey()).thenReturn(
 				RuleKey.of(NotificationFields.PROJECT_KEY,
 						NotificationFields.RULE_KEY));
-		when(context.getResource((Resource) notNull())).thenReturn(resource);
-		doReturn(NotificationFields.SCM_AUTHOR).when(job).getResourceData(
-				context, CoreMetrics.SCM_AUTHORS_BY_LINE, resource, line);
-		doReturn(NotificationFields.SCM_DATE).when(job).getResourceData(
-				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE,
-				resource, line);
-		doReturn(NotificationFields.SCM_REVISION).when(job).getResourceData(
-				context, CoreMetrics.SCM_REVISIONS_BY_LINE, resource, line);
+		when(issue.line()).thenReturn(line);
 
-		Notification notification = job.createNotification(project, context,
-				issue);
+		doReturn(lastLine).when(decorator).getLastRevisionLine(context);
+
+		doReturn(NotificationFields.SCM_AUTHOR)
+				.when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_AUTHORS_BY_LINE, line);
+		doReturn(NotificationFields.SCM_DATE).when(decorator).getResourceData(
+				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, line);
+		doReturn(NotificationFields.SCM_REVISION).when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_REVISIONS_BY_LINE,
+						line);
+		doReturn(NotificationFields.SCM_REVISION_LAST).when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_REVISIONS_BY_LINE,
+						lastLine);
+
+		Notification notification = decorator
+				.createNotification(context, issue);
 
 		Assert.assertEquals(NotificationFields.NOTIFICATION_TYPE,
 				notification.getType());
 		Assert.assertEquals(NotificationFields.PROJECT_KEY,
 				notification.getFieldValue(NotificationFields.PROJECT_KEY));
-		Assert.assertEquals(NotificationFields.PROJECT_KEY + ":"
-				+ NotificationFields.COMPONENT_KEY,
-				notification.getFieldValue(NotificationFields.COMPONENT_KEY));
+		Assert.assertEquals(project.getPath() + "/" + componentPath,
+				notification.getFieldValue(NotificationFields.COMPONENT_PATH));
 		Assert.assertEquals(NotificationFields.SEVERITY,
 				notification.getFieldValue(NotificationFields.SEVERITY));
 		Assert.assertEquals(NotificationFields.MESSAGE,
@@ -145,40 +156,49 @@ public class NewIssuesPostJobTest {
 				notification.getFieldValue(NotificationFields.SCM_DATE));
 		Assert.assertEquals(NotificationFields.SCM_REVISION,
 				notification.getFieldValue(NotificationFields.SCM_REVISION));
+		Assert.assertEquals(NotificationFields.SCM_REVISION_LAST, notification
+				.getFieldValue(NotificationFields.SCM_REVISION_LAST));
 	}
 
 	@Test
 	public void testCreateNotificationNullLine() throws Exception {
-		Integer line = new Integer(6);
-		when(issue.componentKey()).thenReturn(
-				NotificationFields.PROJECT_KEY + ":"
-						+ NotificationFields.COMPONENT_KEY);
+		Integer line = new Integer(5);
+		Integer lastLine = new Integer(2);
+		String componentPath = "componentPath";
+
+		when(context.getProject()).thenReturn(project);
+		when(context.getResource()).thenReturn(resource);
+		when(resource.getPath()).thenReturn(componentPath);
 		when(issue.severity()).thenReturn(NotificationFields.SEVERITY);
 		when(issue.message()).thenReturn(NotificationFields.MESSAGE);
-		when(issue.line()).thenReturn(null);
 		when(issue.ruleKey()).thenReturn(
 				RuleKey.of(NotificationFields.PROJECT_KEY,
 						NotificationFields.RULE_KEY));
-		when(context.getResource((Resource) notNull())).thenReturn(resource);
-		doReturn(NotificationFields.SCM_AUTHOR).when(job).getResourceData(
-				context, CoreMetrics.SCM_AUTHORS_BY_LINE, resource, line);
-		doReturn(NotificationFields.SCM_DATE).when(job).getResourceData(
-				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE,
-				resource, line);
-		doReturn(NotificationFields.SCM_REVISION).when(job).getResourceData(
-				context, CoreMetrics.SCM_REVISIONS_BY_LINE, resource, line);
-		doReturn(line).when(job).getLastRevisionLine(context, resource);
+		when(issue.line()).thenReturn(null);
 
-		Notification notification = job.createNotification(project, context,
-				issue);
+		doReturn(lastLine).when(decorator).getLastRevisionLine(context);
+
+		doReturn(NotificationFields.SCM_AUTHOR)
+				.when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_AUTHORS_BY_LINE, lastLine);
+		doReturn(NotificationFields.SCM_DATE).when(decorator).getResourceData(
+				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, lastLine);
+		doReturn(NotificationFields.SCM_REVISION).when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_REVISIONS_BY_LINE,
+						lastLine);
+		doReturn(NotificationFields.SCM_REVISION_LAST).when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_REVISIONS_BY_LINE,
+						lastLine);
+
+		Notification notification = decorator
+				.createNotification(context, issue);
 
 		Assert.assertEquals(NotificationFields.NOTIFICATION_TYPE,
 				notification.getType());
 		Assert.assertEquals(NotificationFields.PROJECT_KEY,
 				notification.getFieldValue(NotificationFields.PROJECT_KEY));
-		Assert.assertEquals(NotificationFields.PROJECT_KEY + ":"
-				+ NotificationFields.COMPONENT_KEY,
-				notification.getFieldValue(NotificationFields.COMPONENT_KEY));
+		Assert.assertEquals(project.getPath() + "/" + componentPath,
+				notification.getFieldValue(NotificationFields.COMPONENT_PATH));
 		Assert.assertEquals(NotificationFields.SEVERITY,
 				notification.getFieldValue(NotificationFields.SEVERITY));
 		Assert.assertEquals(NotificationFields.MESSAGE,
@@ -192,69 +212,65 @@ public class NewIssuesPostJobTest {
 				notification.getFieldValue(NotificationFields.SCM_AUTHOR));
 		Assert.assertEquals(NotificationFields.SCM_DATE,
 				notification.getFieldValue(NotificationFields.SCM_DATE));
-		Assert.assertEquals(NotificationFields.SCM_REVISION,
+		Assert.assertEquals(NotificationFields.SCM_REVISION_LAST,
 				notification.getFieldValue(NotificationFields.SCM_REVISION));
+		Assert.assertEquals(NotificationFields.SCM_REVISION_LAST, notification
+				.getFieldValue(NotificationFields.SCM_REVISION_LAST));
 	}
 
 	@Test
 	public void testSupports() throws Exception {
 		when(issue.severity()).thenReturn("");
-		when(job.supportsSeverity("")).thenReturn(false);
-		Assert.assertFalse(job.supports(issue));
+		when(decorator.supportsSeverity("")).thenReturn(false);
+		Assert.assertFalse(decorator.supports(issue));
 
-		when(job.supportsSeverity("")).thenReturn(true);
+		when(decorator.supportsSeverity("")).thenReturn(true);
 		when(issue.isNew()).thenReturn(false);
-		Assert.assertFalse(job.supports(issue));
+		Assert.assertFalse(decorator.supports(issue));
 
 		when(issue.isNew()).thenReturn(true);
 		when(issue.resolution()).thenReturn(" ");
-		Assert.assertFalse(job.supports(issue));
+		Assert.assertFalse(decorator.supports(issue));
 
 		when(issue.resolution()).thenReturn(null);
-		Assert.assertTrue(job.supports(issue));
+		Assert.assertTrue(decorator.supports(issue));
 	}
 
 	@Test
 	public void testSupportsSeverity() throws Exception {
-		Assert.assertFalse(job.supportsSeverity("INFO"));
-		Assert.assertFalse(job.supportsSeverity("MINOR"));
-		Assert.assertTrue(job.supportsSeverity("MAJOR"));
-		Assert.assertTrue(job.supportsSeverity("CRITICAL"));
-		Assert.assertTrue(job.supportsSeverity("BLOCKER"));
-		Assert.assertFalse(job.supportsSeverity("BAD"));
+		Assert.assertFalse(decorator.supportsSeverity("INFO"));
+		Assert.assertFalse(decorator.supportsSeverity("MINOR"));
+		Assert.assertTrue(decorator.supportsSeverity("MAJOR"));
+		Assert.assertTrue(decorator.supportsSeverity("CRITICAL"));
+		Assert.assertTrue(decorator.supportsSeverity("BLOCKER"));
+		Assert.assertFalse(decorator.supportsSeverity("BAD"));
 	}
 
 	@Test
 	public void testGetResourceData() throws Exception {
-		when(
-				context.getMeasure(resource,
-						CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE))
+		when(context.getMeasure(CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE))
 				.thenReturn(dateMeasure);
-		Assert.assertEquals("2015-03-12T12:30:29+0200", job.getResourceData(
-				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE,
-				resource, 9));
+		Assert.assertEquals("2015-03-12T12:30:29+0200", decorator
+				.getResourceData(context,
+						CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, 9));
 
 	}
 
 	@Test
 	public void testGetResourceDataNull() throws Exception {
-		when(
-				context.getMeasure(resource,
-						CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE))
+		when(context.getMeasure(CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE))
 				.thenReturn(null);
-		Assert.assertNull(job.getResourceData(context,
-				CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, resource, 9));
+		Assert.assertNull(decorator.getResourceData(context,
+				CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, 9));
 
 	}
 
 	@Test
 	public void testGetLastRevision() throws Exception {
-		when(
-				context.getMeasure(resource,
-						CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE))
+		when(context.getMeasure(CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE))
 				.thenReturn(dateMeasure);
 		Assert.assertEquals(new Integer(9),
-				job.getLastRevisionLine(context, resource));
+				decorator.getLastRevisionLine(context));
 
 	}
 }

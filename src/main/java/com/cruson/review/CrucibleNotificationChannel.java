@@ -24,7 +24,9 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 		try {
 			createReview(notification);
 		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
+			LOG.error(
+					"on notification: " + notification + " error \n"
+							+ e.getMessage(), e);
 		}
 	}
 
@@ -45,11 +47,9 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 							.getFieldValue(NotificationFields.SCM_AUTHOR)));
 		}
 
-		String file = NotificationFields.getFile(
-				notification.getFieldValue(NotificationFields.COMPONENT_KEY),
-				notification.getFieldValue(NotificationFields.PROJECT_KEY));
-		String itemId = api.addReviewItem(reviewId, file,
-				notification.getFieldValue(NotificationFields.SCM_REVISION));
+		String itemId = api.addReviewItem(reviewId, notification
+				.getFieldValue(NotificationFields.COMPONENT_PATH), notification
+				.getFieldValue(NotificationFields.SCM_REVISION_LAST));
 
 		api.addReviewComment(reviewId, itemId,
 				notification.getFieldValue(NotificationFields.MESSAGE) + " "
@@ -64,7 +64,7 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 				"New %s issue created by %s in %s at line %s commit %s at %s",
 				notification.getFieldValue(NotificationFields.SEVERITY),
 				notification.getFieldValue(NotificationFields.SCM_AUTHOR),
-				notification.getFieldValue(NotificationFields.COMPONENT_KEY),
+				notification.getFieldValue(NotificationFields.COMPONENT_PATH),
 				notification.getFieldValue(NotificationFields.LINE),
 				notification.getFieldValue(NotificationFields.SCM_REVISION),
 				notification.getFieldValue(NotificationFields.SCM_DATE));

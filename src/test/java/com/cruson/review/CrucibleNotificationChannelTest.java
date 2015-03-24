@@ -49,7 +49,7 @@ public class CrucibleNotificationChannelTest {
 
 		notification = new Notification(NotificationFields.NOTIFICATION_TYPE)
 				.setFieldValue(NotificationFields.PROJECT_KEY, "PROJECT_KEY")
-				.setFieldValue(NotificationFields.COMPONENT_KEY,
+				.setFieldValue(NotificationFields.COMPONENT_PATH,
 						"PROJECT_KEY:src/main/java/sonar/git/gitest/TestGit.java")
 				.setFieldValue(NotificationFields.SEVERITY, "SEVERITY")
 				.setFieldValue(NotificationFields.SCM_AUTHOR, "yura@")
@@ -57,6 +57,8 @@ public class CrucibleNotificationChannelTest {
 				.setFieldValue(NotificationFields.SCM_DATE, "SCM_DATE")
 				.setFieldValue(NotificationFields.SCM_REVISION,
 						"6f67f322e7fb490cc8ee116b21fec64af97d792e")
+				.setFieldValue(NotificationFields.SCM_REVISION_LAST,
+						"6f67f322e7fb490cc8ee116b21fec64af97d7921")
 				.setFieldValue(NotificationFields.RULE_KEY, "squid:S106")
 				.setFieldValue(NotificationFields.MESSAGE, "MESSAGE");
 	}
@@ -80,8 +82,8 @@ public class CrucibleNotificationChannelTest {
 
 		when(
 				api.addReviewItem(reviewId,
-						"src/main/java/sonar/git/gitest/TestGit.java",
-						"6f67f322e7fb490cc8ee116b21fec64af97d792e"))
+						"PROJECT_KEY:src/main/java/sonar/git/gitest/TestGit.java",
+						"6f67f322e7fb490cc8ee116b21fec64af97d7921"))
 				.thenReturn(itemId);
 
 		doNothing().when(api).addReviewComment(eq(reviewId), eq(itemId),
@@ -96,8 +98,8 @@ public class CrucibleNotificationChannelTest {
 				Mockito.anyString(), eq("test"));
 		verify(api).addReviewer(reviewId, "yura");
 		verify(api).addReviewItem(reviewId,
-				"src/main/java/sonar/git/gitest/TestGit.java",
-				"6f67f322e7fb490cc8ee116b21fec64af97d792e");
+				"PROJECT_KEY:src/main/java/sonar/git/gitest/TestGit.java",
+				"6f67f322e7fb490cc8ee116b21fec64af97d7921");
 		verify(api).addReviewComment(eq(reviewId), eq(itemId), anyString(),
 				eq("9"));
 		verify(api).startReview(reviewId);
@@ -110,8 +112,8 @@ public class CrucibleNotificationChannelTest {
 		Notification notification = new Notification(
 				NotificationFields.NOTIFICATION_TYPE)
 				.setFieldValue(NotificationFields.PROJECT_KEY, "PROJECT_KEY")
-				.setFieldValue(NotificationFields.COMPONENT_KEY,
-						"PROJECT_KEY:src/main/java/sonar/git/gitest/TestGit.java")
+				.setFieldValue(NotificationFields.COMPONENT_PATH,
+						"PROJECT_KEY:module2:src/main/java/sonar/git/gitest/module2/TestGit2.java")
 				.setFieldValue(NotificationFields.SEVERITY, "SEVERITY")
 				.setFieldValue(NotificationFields.SCM_AUTHOR, "yura@")
 				.setFieldValue(NotificationFields.LINE, "9")
