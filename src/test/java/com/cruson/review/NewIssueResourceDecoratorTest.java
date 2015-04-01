@@ -222,14 +222,17 @@ public class NewIssueResourceDecoratorTest {
 	public void testSupports() throws Exception {
 		when(issue.severity()).thenReturn("");
 		when(decorator.supportsSeverity("")).thenReturn(false);
+		when(decorator.isPluginEnabled()).thenReturn(false);
 		Assert.assertFalse(decorator.supports(issue));
 
 		when(decorator.supportsSeverity("")).thenReturn(true);
-		when(issue.isNew()).thenReturn(false);
 		Assert.assertFalse(decorator.supports(issue));
 
 		when(issue.isNew()).thenReturn(true);
 		when(issue.resolution()).thenReturn(" ");
+		Assert.assertFalse(decorator.supports(issue));
+
+		when(decorator.isPluginEnabled()).thenReturn(true);
 		Assert.assertFalse(decorator.supports(issue));
 
 		when(issue.resolution()).thenReturn(null);

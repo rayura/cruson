@@ -29,10 +29,10 @@ public class NewIssuesNotificationDispatcher extends NotificationDispatcher {
 				.create(KEY)
 				.setProperty(
 						NotificationDispatcherMetadata.GLOBAL_NOTIFICATION,
-						String.valueOf(true))
+						String.valueOf(false))
 				.setProperty(
 						NotificationDispatcherMetadata.PER_PROJECT_NOTIFICATION,
-						String.valueOf(true));
+						String.valueOf(false));
 	}
 
 	@Override

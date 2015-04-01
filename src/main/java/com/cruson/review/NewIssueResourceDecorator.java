@@ -61,8 +61,12 @@ public class NewIssueResourceDecorator implements Decorator {
 	}
 
 	protected boolean supports(Issue issue) {
-		return supportsSeverity(issue.severity()) && issue.isNew()
-				&& issue.resolution() == null;
+		return isPluginEnabled() && supportsSeverity(issue.severity())
+				&& issue.isNew() && issue.resolution() == null;
+	}
+
+	protected boolean isPluginEnabled() {
+		return settings.getBoolean(CruSonPlugin.CRUSON_ENABLED);
 	}
 
 	protected boolean supportsSeverity(String severity) {

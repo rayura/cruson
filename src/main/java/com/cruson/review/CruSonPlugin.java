@@ -20,61 +20,73 @@ public final class CruSonPlugin extends SonarPlugin {
 	public static final String CRUSON_PROJECT = "cruson.crucible.project";
 	public static final String CRUSON_REPOSITORY = "cruson.crucible.repository";
 	public static final String CRUSON_SEVERITY = "cruson.severity";
+	public static final String CRUSON_ENABLED = "cruson.enabled";
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public List getExtensions() {
 		return ImmutableList.of(
+			PropertyDefinition.builder(CRUSON_ENABLED)
+		        .name("Enable/Disable crusible review")
+		        .description("Enable/Disable crusible review")
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .category(CoreProperties.CATEGORY_GENERAL)
+		        .subCategory(SUBCATEGORY_CRUCIBLE)
+		        .type(PropertyType.BOOLEAN)
+		        .defaultValue(Boolean.FALSE.toString())
+		        .index(0)
+		        .build(),
 			PropertyDefinition.builder(CRUSON_HOST_URL)
 		        .name("Crucible host url")
 		        .description("Crucible host url like http://crucible:8080")
-		        .onQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
-		        .category(CoreProperties.CATEGORY_GENERAL)
-		        .subCategory(SUBCATEGORY_CRUCIBLE)
-		        .type(PropertyType.STRING)
-		        .index(0)
-		        .build(),
-			PropertyDefinition.builder(CRUSON_HOST_USER)
-		        .name("Crucible user name")
-		        .onQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
 		        .index(1)
 		        .build(),
-			PropertyDefinition.builder(CRUSON_HOST_PASSWORD)
-		        .name("Crucible user password")
-		        .onQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+			PropertyDefinition.builder(CRUSON_HOST_USER)
+		        .name("Crucible user name")
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
 		        .index(2)
 		        .build(),
-			PropertyDefinition.builder(CRUSON_PROJECT)
-		        .name("Crucible project for review pushing")
-		        .onQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+			PropertyDefinition.builder(CRUSON_HOST_PASSWORD)
+		        .name("Crucible user password")
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
-		        .type(PropertyType.STRING)
+		        .type(PropertyType.PASSWORD)
 		        .index(3)
 		        .build(),
-			PropertyDefinition.builder(CRUSON_REPOSITORY)
-		        .name("Crucible repository name")
-		        .onQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+			PropertyDefinition.builder(CRUSON_PROJECT)
+		        .name("Crucible project for review pushing")
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
 		        .index(4)
 		        .build(),
-			PropertyDefinition.builder(CRUSON_SEVERITY)
-		        .name("Crucible minimum severity")
-		        .description("Crucible minimum severity. May be one of INFO, MINOR, MAJOR, CRITICAL, BLOCKER")
-		        .onQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+			PropertyDefinition.builder(CRUSON_REPOSITORY)
+		        .name("Crucible repository name")
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
-		        .defaultValue(Severity.MINOR.toString())
 		        .index(5)
+		        .build(),
+			PropertyDefinition.builder(CRUSON_SEVERITY)
+		        .name("Crucible minimum severity")
+		        .description("Crucible minimum severity. May be one of INFO, MINOR, MAJOR, CRITICAL, BLOCKER")
+		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .category(CoreProperties.CATEGORY_GENERAL)
+		        .subCategory(SUBCATEGORY_CRUCIBLE)
+		        .type(PropertyType.SINGLE_SELECT_LIST)
+		        .options("INFO", "MINOR", "MAJOR", "CRITICAL", "BLOCKER")
+		        .defaultValue(Severity.MINOR.toString())
+		        .index(6)
 		        .build(),
 			NewIssuesNotificationDispatcher.class,
 			CrucibleNotificationChannel.class,
