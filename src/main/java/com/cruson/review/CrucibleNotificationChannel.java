@@ -31,10 +31,8 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 	@Override
 	public void deliver(Notification notification, String userlogin) {
 		try {
-			Integer projectId = Integer.parseInt(notification
-					.getFieldValue(NotificationFields.PROJECT_ID));
-
-			ProjectSettings settings = buildProjectSettings(projectId);
+			ProjectSettings settings = buildProjectSettings(notification
+					.getFieldValue(NotificationFields.PROJECT_KEY));
 			CrucibleApi api = buildCrucibleApi(settings);
 
 			createReview(settings, api, notification);
@@ -93,9 +91,9 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 				+ notification.getFieldValue(NotificationFields.RULE_KEY) + "]";
 	}
 
-	public ProjectSettings buildProjectSettings(Integer projectId) {
+	public ProjectSettings buildProjectSettings(String projectKey) {
 		List<PropertyDto> properties = propertiesDao
-				.selectProjectProperties(projectId);
+				.selectProjectProperties(projectKey);
 		Map<String, String> prop = new HashMap<>();
 		for (PropertyDto dto : properties) {
 			prop.put(dto.getKey(), dto.getValue());

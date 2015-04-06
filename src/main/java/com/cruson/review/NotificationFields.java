@@ -4,7 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 public class NotificationFields {
 	public static final String NOTIFICATION_TYPE = "new-issue-review";
-	public static final String PROJECT_ID = "projectKey";
+	public static final String PROJECT_KEY = "projectKey";
 	public static final String COMPONENT_PATH = "componentPath";
 	public static final String MESSAGE = "message";
 	public static final String SEVERITY = "severity";

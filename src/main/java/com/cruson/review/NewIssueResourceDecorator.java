@@ -80,8 +80,8 @@ public class NewIssueResourceDecorator implements Decorator {
 	public Notification createNotification(DecoratorContext context, Issue issue) {
 		Notification notification = new Notification(
 				NotificationFields.NOTIFICATION_TYPE);
-		notification.setFieldValue(NotificationFields.PROJECT_ID,
-				getRootProgect(context).getId().toString());
+		notification.setFieldValue(NotificationFields.PROJECT_KEY,
+				getRootProgect(context).getKey());
 		notification
 				.setFieldValue(NotificationFields.COMPONENT_PATH, context
 						.getProject().getPath()

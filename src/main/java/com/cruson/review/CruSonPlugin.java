@@ -5,9 +5,9 @@ import java.util.List;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.PropertyType;
 import org.sonar.api.SonarPlugin;
-import org.sonar.api.batch.sensor.issue.Issue.Severity;
 import org.sonar.api.config.PropertyDefinition;
 import org.sonar.api.resources.Qualifiers;
+import org.sonar.api.rule.Severity;
 
 import com.google.common.collect.ImmutableList;
 
@@ -85,7 +85,7 @@ public final class CruSonPlugin extends SonarPlugin {
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.SINGLE_SELECT_LIST)
 		        .options("INFO", "MINOR", "MAJOR", "CRITICAL", "BLOCKER")
-		        .defaultValue(Severity.MINOR.toString())
+		        .defaultValue(Severity.MINOR)
 		        .index(6)
 		        .build(),
 			NewIssuesNotificationDispatcher.class,

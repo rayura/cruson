@@ -60,7 +60,7 @@ public class CrucibleNotificationChannelTest {
 		channel = spy(channel);
 
 		notification = new Notification(NotificationFields.NOTIFICATION_TYPE)
-				.setFieldValue(NotificationFields.PROJECT_ID, "123")
+				.setFieldValue(NotificationFields.PROJECT_KEY, "gitest")
 				.setFieldValue(NotificationFields.COMPONENT_PATH,
 						"PROJECT_KEY:src/main/java/sonar/git/gitest/TestGit.java")
 				.setFieldValue(NotificationFields.SEVERITY, "SEVERITY")
@@ -82,10 +82,11 @@ public class CrucibleNotificationChannelTest {
 		dto.setKey("key");
 		dto.setValue("value");
 
-		when(propertiesDao.selectProjectProperties(2)).thenReturn(
+		when(propertiesDao.selectProjectProperties("gitest")).thenReturn(
 				Arrays.asList(new PropertyDto[] { dto }));
 
-		ProjectSettings projectSettings = channel.buildProjectSettings(2);
+		ProjectSettings projectSettings = channel
+				.buildProjectSettings("gitest");
 
 		Assert.assertEquals("value", projectSettings.getString("key"));
 	}
@@ -103,7 +104,7 @@ public class CrucibleNotificationChannelTest {
 	public void testDeliver() throws Exception {
 		ProjectSettings settings = new ProjectSettings(globalSettings,
 				new HashMap<String, String>());
-		doReturn(settings).when(channel).buildProjectSettings(123);
+		doReturn(settings).when(channel).buildProjectSettings("gitest");
 		doReturn(api).when(channel).buildCrucibleApi(settings);
 		doThrow(new Exception()).when(channel).createReview(settings, api,
 				notification);
@@ -157,7 +158,7 @@ public class CrucibleNotificationChannelTest {
 	public void testMakeReviewData() {
 		Notification notification = new Notification(
 				NotificationFields.NOTIFICATION_TYPE)
-				.setFieldValue(NotificationFields.PROJECT_ID, "PROJECT_KEY")
+				.setFieldValue(NotificationFields.PROJECT_KEY, "PROJECT_KEY")
 				.setFieldValue(NotificationFields.COMPONENT_PATH,
 						"PROJECT_KEY:module2:src/main/java/sonar/git/gitest/module2/TestGit2.java")
 				.setFieldValue(NotificationFields.SEVERITY, "SEVERITY")
@@ -168,10 +169,10 @@ public class CrucibleNotificationChannelTest {
 						"6f67f322e7fb490cc8ee116b21fec64af97d792e")
 				.setFieldValue(NotificationFields.RULE_KEY, "squid:S106")
 				.setFieldValue(NotificationFields.MESSAGE, "MESSAGE");
-		
+
 		ProjectSettings settings = new ProjectSettings(globalSettings,
 				new HashMap<String, String>());
-		doReturn(settings).when(channel).buildProjectSettings(123);
+		doReturn(settings).when(channel).buildProjectSettings("PROJECT_KEY");
 		doReturn(api).when(channel).buildCrucibleApi(settings);
 
 		channel = new CrucibleNotificationChannel(globalSettings, null,

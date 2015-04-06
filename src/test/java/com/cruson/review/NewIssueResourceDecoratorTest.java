@@ -1,7 +1,6 @@
 package com.cruson.review;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -47,7 +46,7 @@ public class NewIssueResourceDecoratorTest {
 	@Mock
 	private DecoratorContext context;
 
-	private Project project = new Project(NotificationFields.PROJECT_ID);
+	private Project project = new Project(NotificationFields.PROJECT_KEY);
 
 	@Mock
 	private Resource resource;
@@ -115,7 +114,7 @@ public class NewIssueResourceDecoratorTest {
 		when(issue.severity()).thenReturn(NotificationFields.SEVERITY);
 		when(issue.message()).thenReturn(NotificationFields.MESSAGE);
 		when(issue.ruleKey()).thenReturn(
-				RuleKey.of(NotificationFields.PROJECT_ID,
+				RuleKey.of(NotificationFields.PROJECT_KEY,
 						NotificationFields.RULE_KEY));
 		when(issue.line()).thenReturn(line);
 
@@ -138,8 +137,8 @@ public class NewIssueResourceDecoratorTest {
 
 		Assert.assertEquals(NotificationFields.NOTIFICATION_TYPE,
 				notification.getType());
-		Assert.assertEquals("123",
-				notification.getFieldValue(NotificationFields.PROJECT_ID));
+		Assert.assertEquals(NotificationFields.PROJECT_KEY,
+				notification.getFieldValue(NotificationFields.PROJECT_KEY));
 		Assert.assertEquals(project.getPath() + "/" + componentPath,
 				notification.getFieldValue(NotificationFields.COMPONENT_PATH));
 		Assert.assertEquals(NotificationFields.SEVERITY,
@@ -148,7 +147,7 @@ public class NewIssueResourceDecoratorTest {
 				notification.getFieldValue(NotificationFields.MESSAGE));
 		Assert.assertEquals(line.toString(),
 				notification.getFieldValue(NotificationFields.LINE));
-		Assert.assertEquals(NotificationFields.PROJECT_ID + ":"
+		Assert.assertEquals(NotificationFields.PROJECT_KEY + ":"
 				+ NotificationFields.RULE_KEY,
 				notification.getFieldValue(NotificationFields.RULE_KEY));
 		Assert.assertEquals(NotificationFields.SCM_AUTHOR,
@@ -173,17 +172,18 @@ public class NewIssueResourceDecoratorTest {
 		when(issue.severity()).thenReturn(NotificationFields.SEVERITY);
 		when(issue.message()).thenReturn(NotificationFields.MESSAGE);
 		when(issue.ruleKey()).thenReturn(
-				RuleKey.of(NotificationFields.PROJECT_ID,
+				RuleKey.of(NotificationFields.PROJECT_KEY,
 						NotificationFields.RULE_KEY));
 		when(issue.line()).thenReturn(null);
 
 		doReturn(lastLine).when(decorator).getLastRevisionLine(context);
 
-		doReturn(NotificationFields.SCM_AUTHOR)
-				.when(decorator)
-				.getResourceData(context, CoreMetrics.SCM_AUTHORS_BY_LINE, lastLine);
+		doReturn(NotificationFields.SCM_AUTHOR).when(decorator)
+				.getResourceData(context, CoreMetrics.SCM_AUTHORS_BY_LINE,
+						lastLine);
 		doReturn(NotificationFields.SCM_DATE).when(decorator).getResourceData(
-				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, lastLine);
+				context, CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE,
+				lastLine);
 		doReturn(NotificationFields.SCM_REVISION).when(decorator)
 				.getResourceData(context, CoreMetrics.SCM_REVISIONS_BY_LINE,
 						lastLine);
@@ -196,8 +196,8 @@ public class NewIssueResourceDecoratorTest {
 
 		Assert.assertEquals(NotificationFields.NOTIFICATION_TYPE,
 				notification.getType());
-		Assert.assertEquals("123",
-				notification.getFieldValue(NotificationFields.PROJECT_ID));
+		Assert.assertEquals(NotificationFields.PROJECT_KEY,
+				notification.getFieldValue(NotificationFields.PROJECT_KEY));
 		Assert.assertEquals(project.getPath() + "/" + componentPath,
 				notification.getFieldValue(NotificationFields.COMPONENT_PATH));
 		Assert.assertEquals(NotificationFields.SEVERITY,
@@ -206,7 +206,7 @@ public class NewIssueResourceDecoratorTest {
 				notification.getFieldValue(NotificationFields.MESSAGE));
 		Assert.assertEquals("",
 				notification.getFieldValue(NotificationFields.LINE));
-		Assert.assertEquals(NotificationFields.PROJECT_ID + ":"
+		Assert.assertEquals(NotificationFields.PROJECT_KEY + ":"
 				+ NotificationFields.RULE_KEY,
 				notification.getFieldValue(NotificationFields.RULE_KEY));
 		Assert.assertEquals(NotificationFields.SCM_AUTHOR,
