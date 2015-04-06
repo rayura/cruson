@@ -15,19 +15,19 @@
 		<dependency>
 			<groupId>org.codehaus.sonar</groupId>
 			<artifactId>sonar-plugin-api</artifactId>
-			<version>5.0.1</version>
+			<version>4.5.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.sonar</groupId>
 			<artifactId>sonar-core</artifactId>
-			<version>5.0.1</version>
+			<version>4.5.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.sonar</groupId>
 			<artifactId>sonar-batch</artifactId>
-			<version>5.0.1</version>
+			<version>4.5.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
