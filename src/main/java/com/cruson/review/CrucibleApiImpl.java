@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.sonar.api.ServerExtension;
-import org.sonar.api.config.Settings;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -24,29 +23,28 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 	protected static final String ERROR_MESSAGE = "stacktrace";
 
 	private HttpDownload httpDownload;
-	private Settings settings;
+	private String url;
+	private String login;
+	private String password;
 
-	public CrucibleApiImpl(Settings settings, HttpDownload httpDownload) {
-		this.settings = settings;
+	public CrucibleApiImpl(HttpDownload httpDownload) {
 		this.httpDownload = httpDownload;
 	}
 
 	public boolean isUserExist(String user) throws Exception {
 		try {
 			String content = httpDownload.doGet(
-					getUrl() + String.format(LINK_USER_INFO, user), getUser(),
-					getPassword());
+					url + String.format(LINK_USER_INFO, user), login, password);
 			return convertResponse(content).get(USER_INFO_DATA) != null;
 		} catch (IOException e) {
 			return false;
 		}
 	}
 
-	public void addReviewer(String reviewId, String user) throws Exception {
+	public void addReviewer(String reviewId, String reviewer) throws Exception {
 		httpDownload.doPost(
-				getUrl() + String.format(LINK_REVIEW_REVIEWER, reviewId),
-				getUser(), getPassword(), user);
-		// convertResponse(content);
+				url + String.format(LINK_REVIEW_REVIEWER, reviewId), login,
+				password, reviewer);
 	}
 
 	public String createReview(String project, String message,
@@ -63,8 +61,8 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		reviewData.add("author", authorObj);
 		authorObj.addProperty("userName", author);
 
-		String content = httpDownload.doPost(getUrl() + LINK_REVIEW_DATA,
-				getUser(), getPassword(), data.toString());
+		String content = httpDownload.doPost(url + LINK_REVIEW_DATA, login,
+				password, data.toString());
 
 		data = convertResponse(content);
 		return data.getAsJsonObject("permaId").get("id").getAsString();
@@ -72,25 +70,24 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 
 	public void startReview(String reviewId) throws Exception {
 		String content = httpDownload.doPost(
-				getUrl() + String.format(LINK_REVIEW_START, reviewId),
-				getUser(), getPassword(), "");
+				url + String.format(LINK_REVIEW_START, reviewId), login,
+				password, "");
 		convertResponse(content);
 	}
 
-	public String addReviewItem(String reviewId, String path, String revision)
-			throws Exception {
+	public String addReviewItem(String repository, String reviewId,
+			String path, String revision) throws Exception {
 		JsonObject data = new JsonObject();
-		data.addProperty("repositoryName",
-				settings.getString(CruSonPlugin.CRUSON_REPOSITORY));
 
+		data.addProperty("repositoryName", repository);
 		data.addProperty("fromPath", path);
 		data.addProperty("fromRevision", revision);
 		data.addProperty("toPath", path);
 		data.addProperty("toRevision", revision);
 
 		String content = httpDownload.doPost(
-				getUrl() + String.format(LINK_REVIEW_ITEM, reviewId),
-				getUser(), getPassword(), data.toString());
+				url + String.format(LINK_REVIEW_ITEM, reviewId), login,
+				password, data.toString());
 		data = convertResponse(content);
 		return data.getAsJsonObject("permId").get("id").getAsString();
 	}
@@ -102,10 +99,9 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		if (StringUtils.isNotBlank(line)) {
 			data.addProperty("toLineRange", line);
 		}
-		String content = httpDownload
-				.doPost(getUrl()
-						+ String.format(LINK_REVIEW_COMMENT, reviewId, itemId),
-						getUser(), getPassword(), data.toString());
+		String content = httpDownload.doPost(
+				url + String.format(LINK_REVIEW_COMMENT, reviewId, itemId),
+				login, password, data.toString());
 		convertResponse(content);
 	}
 
@@ -122,18 +118,6 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		}
 	}
 
-	protected String getUser() {
-		return settings.getString(CruSonPlugin.CRUSON_HOST_USER);
-	}
-
-	protected String getPassword() {
-		return settings.getString(CruSonPlugin.CRUSON_HOST_PASSWORD);
-	}
-
-	protected String getUrl() {
-		return settings.getString(CruSonPlugin.CRUSON_HOST_URL);
-	}
-
 	public HttpDownload getHttpDownload() {
 		return httpDownload;
 	}
@@ -142,11 +126,28 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		this.httpDownload = httpDownload;
 	}
 
-	public Settings getSettings() {
-		return settings;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setSettings(Settings settings) {
-		this.settings = settings;
+	public void setUrl(String url) {
+		this.url = url;
 	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 }

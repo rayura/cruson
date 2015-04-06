@@ -47,7 +47,7 @@ public class NewIssueResourceDecoratorTest {
 	@Mock
 	private DecoratorContext context;
 
-	private Project project = new Project(NotificationFields.PROJECT_KEY);
+	private Project project = new Project(NotificationFields.PROJECT_ID);
 
 	@Mock
 	private Resource resource;
@@ -81,6 +81,7 @@ public class NewIssueResourceDecoratorTest {
 				CoreMetrics.SCM_LAST_COMMIT_DATETIMES_BY_LINE, TEST_DATES);
 
 		project.setPath("module");
+		project.setId(123);
 	}
 
 	@Test
@@ -114,7 +115,7 @@ public class NewIssueResourceDecoratorTest {
 		when(issue.severity()).thenReturn(NotificationFields.SEVERITY);
 		when(issue.message()).thenReturn(NotificationFields.MESSAGE);
 		when(issue.ruleKey()).thenReturn(
-				RuleKey.of(NotificationFields.PROJECT_KEY,
+				RuleKey.of(NotificationFields.PROJECT_ID,
 						NotificationFields.RULE_KEY));
 		when(issue.line()).thenReturn(line);
 
@@ -137,8 +138,8 @@ public class NewIssueResourceDecoratorTest {
 
 		Assert.assertEquals(NotificationFields.NOTIFICATION_TYPE,
 				notification.getType());
-		Assert.assertEquals(NotificationFields.PROJECT_KEY,
-				notification.getFieldValue(NotificationFields.PROJECT_KEY));
+		Assert.assertEquals("123",
+				notification.getFieldValue(NotificationFields.PROJECT_ID));
 		Assert.assertEquals(project.getPath() + "/" + componentPath,
 				notification.getFieldValue(NotificationFields.COMPONENT_PATH));
 		Assert.assertEquals(NotificationFields.SEVERITY,
@@ -147,7 +148,7 @@ public class NewIssueResourceDecoratorTest {
 				notification.getFieldValue(NotificationFields.MESSAGE));
 		Assert.assertEquals(line.toString(),
 				notification.getFieldValue(NotificationFields.LINE));
-		Assert.assertEquals(NotificationFields.PROJECT_KEY + ":"
+		Assert.assertEquals(NotificationFields.PROJECT_ID + ":"
 				+ NotificationFields.RULE_KEY,
 				notification.getFieldValue(NotificationFields.RULE_KEY));
 		Assert.assertEquals(NotificationFields.SCM_AUTHOR,
@@ -172,7 +173,7 @@ public class NewIssueResourceDecoratorTest {
 		when(issue.severity()).thenReturn(NotificationFields.SEVERITY);
 		when(issue.message()).thenReturn(NotificationFields.MESSAGE);
 		when(issue.ruleKey()).thenReturn(
-				RuleKey.of(NotificationFields.PROJECT_KEY,
+				RuleKey.of(NotificationFields.PROJECT_ID,
 						NotificationFields.RULE_KEY));
 		when(issue.line()).thenReturn(null);
 
@@ -195,8 +196,8 @@ public class NewIssueResourceDecoratorTest {
 
 		Assert.assertEquals(NotificationFields.NOTIFICATION_TYPE,
 				notification.getType());
-		Assert.assertEquals(NotificationFields.PROJECT_KEY,
-				notification.getFieldValue(NotificationFields.PROJECT_KEY));
+		Assert.assertEquals("123",
+				notification.getFieldValue(NotificationFields.PROJECT_ID));
 		Assert.assertEquals(project.getPath() + "/" + componentPath,
 				notification.getFieldValue(NotificationFields.COMPONENT_PATH));
 		Assert.assertEquals(NotificationFields.SEVERITY,
@@ -205,7 +206,7 @@ public class NewIssueResourceDecoratorTest {
 				notification.getFieldValue(NotificationFields.MESSAGE));
 		Assert.assertEquals("",
 				notification.getFieldValue(NotificationFields.LINE));
-		Assert.assertEquals(NotificationFields.PROJECT_KEY + ":"
+		Assert.assertEquals(NotificationFields.PROJECT_ID + ":"
 				+ NotificationFields.RULE_KEY,
 				notification.getFieldValue(NotificationFields.RULE_KEY));
 		Assert.assertEquals(NotificationFields.SCM_AUTHOR,

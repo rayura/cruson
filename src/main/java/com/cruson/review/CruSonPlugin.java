@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 public final class CruSonPlugin extends SonarPlugin {
 
 	public static final String SUBCATEGORY_CRUCIBLE = "CruSon";
-	public static final String CRUSON_HOST_USER = "cruson.crucible.host.user";
+	public static final String CRUSON_HOST_LOGIN = "cruson.crucible.host.login";
 	public static final String CRUSON_HOST_PASSWORD = "cruson.crucible.host.password";
 	public static final String CRUSON_HOST_URL = "cruson.crucible.host.url";
 	public static final String CRUSON_PROJECT = "cruson.crucible.project";
@@ -29,7 +29,7 @@ public final class CruSonPlugin extends SonarPlugin {
 			PropertyDefinition.builder(CRUSON_ENABLED)
 		        .name("Enable/Disable crusible review")
 		        .description("Enable/Disable crusible review")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.BOOLEAN)
@@ -39,15 +39,15 @@ public final class CruSonPlugin extends SonarPlugin {
 			PropertyDefinition.builder(CRUSON_HOST_URL)
 		        .name("Crucible host url")
 		        .description("Crucible host url like http://crucible:8080")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
 		        .index(1)
 		        .build(),
-			PropertyDefinition.builder(CRUSON_HOST_USER)
+			PropertyDefinition.builder(CRUSON_HOST_LOGIN)
 		        .name("Crucible user name")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
@@ -55,7 +55,7 @@ public final class CruSonPlugin extends SonarPlugin {
 		        .build(),
 			PropertyDefinition.builder(CRUSON_HOST_PASSWORD)
 		        .name("Crucible user password")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.PASSWORD)
@@ -63,7 +63,7 @@ public final class CruSonPlugin extends SonarPlugin {
 		        .build(),
 			PropertyDefinition.builder(CRUSON_PROJECT)
 		        .name("Crucible project for review pushing")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
@@ -71,7 +71,7 @@ public final class CruSonPlugin extends SonarPlugin {
 		        .build(),
 			PropertyDefinition.builder(CRUSON_REPOSITORY)
 		        .name("Crucible repository name")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.STRING)
@@ -80,7 +80,7 @@ public final class CruSonPlugin extends SonarPlugin {
 			PropertyDefinition.builder(CRUSON_SEVERITY)
 		        .name("Crucible minimum severity")
 		        .description("Crucible minimum severity. May be one of INFO, MINOR, MAJOR, CRITICAL, BLOCKER")
-		        .onlyOnQualifiers(Qualifiers.PROJECT, Qualifiers.MODULE)
+		        .onlyOnQualifiers(Qualifiers.PROJECT)
 		        .category(CoreProperties.CATEGORY_GENERAL)
 		        .subCategory(SUBCATEGORY_CRUCIBLE)
 		        .type(PropertyType.SINGLE_SELECT_LIST)

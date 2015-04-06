@@ -11,8 +11,8 @@ public interface CrucibleApi {
 
 	public abstract void startReview(String reviewId) throws Exception;
 
-	public abstract String addReviewItem(String reviewId, String path,
-			String revision) throws Exception;
+	public abstract String addReviewItem(String repository, String reviewId,
+			String path, String revision) throws Exception;
 
 	public abstract void addReviewComment(String reviewId, String itemId,
 			String message, String line) throws Exception;

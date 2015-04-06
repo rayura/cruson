@@ -1,28 +1,43 @@
 package com.cruson.review;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.config.Settings;
 import org.sonar.api.notifications.Notification;
 import org.sonar.api.notifications.NotificationChannel;
+import org.sonar.core.properties.PropertiesDao;
+import org.sonar.core.properties.PropertyDto;
 
 public class CrucibleNotificationChannel extends NotificationChannel {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(CrucibleNotificationChannel.class);
 
-	private Settings settings;
-	private CrucibleApi api;
+	private final Settings globalSettings;
+	private final PropertiesDao propertiesDao;
+	private final HttpDownload httpDownload;
 
-	public CrucibleNotificationChannel(Settings settings, CrucibleApi api) {
-		this.settings = settings;
-		this.api = api;
+	public CrucibleNotificationChannel(Settings globalSettings,
+			PropertiesDao propertiesDao, HttpDownload httpDownload) {
+		this.globalSettings = globalSettings;
+		this.propertiesDao = propertiesDao;
+		this.httpDownload = httpDownload;
 	}
 
 	@Override
 	public void deliver(Notification notification, String userlogin) {
 		try {
-			createReview(notification);
+			Integer projectId = Integer.parseInt(notification
+					.getFieldValue(NotificationFields.PROJECT_ID));
+
+			ProjectSettings settings = buildProjectSettings(projectId);
+			CrucibleApi api = buildCrucibleApi(settings);
+
+			createReview(settings, api, notification);
 		} catch (Exception e) {
 			LOG.error(
 					"on notification: " + notification + " error \n"
@@ -30,7 +45,8 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 		}
 	}
 
-	protected void createReview(Notification notification) throws Exception {
+	protected void createReview(Settings settings, CrucibleApi api,
+			Notification notification) throws Exception {
 		boolean authorExist = api.isUserExist(NotificationFields
 				.getAuthorName(notification
 						.getFieldValue(NotificationFields.SCM_AUTHOR)));
@@ -39,7 +55,7 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 				settings.getString(CruSonPlugin.CRUSON_PROJECT),
 				notification.getFieldValue(NotificationFields.MESSAGE),
 				makeDescription(notification),
-				settings.getString(CruSonPlugin.CRUSON_HOST_USER));
+				settings.getString(CruSonPlugin.CRUSON_HOST_LOGIN));
 
 		if (authorExist) {
 			api.addReviewer(reviewId, NotificationFields
@@ -47,9 +63,11 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 							.getFieldValue(NotificationFields.SCM_AUTHOR)));
 		}
 
-		String itemId = api.addReviewItem(reviewId, notification
-				.getFieldValue(NotificationFields.COMPONENT_PATH), notification
-				.getFieldValue(NotificationFields.SCM_REVISION_LAST));
+		String itemId = api.addReviewItem(settings
+				.getString(CruSonPlugin.CRUSON_REPOSITORY), reviewId,
+				notification.getFieldValue(NotificationFields.COMPONENT_PATH),
+				notification
+						.getFieldValue(NotificationFields.SCM_REVISION_LAST));
 
 		api.addReviewComment(reviewId, itemId,
 				notification.getFieldValue(NotificationFields.MESSAGE) + " "
@@ -73,5 +91,23 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 	protected String makeRuleLink(Notification notification) throws Exception {
 		return "[rule|http://nemo.sonarqube.org/coding_rules#rule_key%3D"
 				+ notification.getFieldValue(NotificationFields.RULE_KEY) + "]";
+	}
+
+	public ProjectSettings buildProjectSettings(Integer projectId) {
+		List<PropertyDto> properties = propertiesDao
+				.selectProjectProperties(projectId);
+		Map<String, String> prop = new HashMap<>();
+		for (PropertyDto dto : properties) {
+			prop.put(dto.getKey(), dto.getValue());
+		}
+		return new ProjectSettings(globalSettings, prop);
+	}
+
+	public CrucibleApi buildCrucibleApi(Settings settings) {
+		CrucibleApiImpl api = new CrucibleApiImpl(httpDownload);
+		api.setUrl(settings.getString(CruSonPlugin.CRUSON_HOST_URL));
+		api.setLogin(settings.getString(CruSonPlugin.CRUSON_HOST_LOGIN));
+		api.setPassword(settings.getString(CruSonPlugin.CRUSON_HOST_PASSWORD));
+		return api;
 	}
 }

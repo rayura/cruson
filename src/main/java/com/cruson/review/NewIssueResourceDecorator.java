@@ -80,8 +80,8 @@ public class NewIssueResourceDecorator implements Decorator {
 	public Notification createNotification(DecoratorContext context, Issue issue) {
 		Notification notification = new Notification(
 				NotificationFields.NOTIFICATION_TYPE);
-		notification.setFieldValue(NotificationFields.PROJECT_KEY, context
-				.getProject().key());
+		notification.setFieldValue(NotificationFields.PROJECT_ID,
+				getRootProgect(context).getId().toString());
 		notification
 				.setFieldValue(NotificationFields.COMPONENT_PATH, context
 						.getProject().getPath()
@@ -156,4 +156,11 @@ public class NewIssueResourceDecorator implements Decorator {
 		return ordering.max(map.entrySet()).getKey();
 	}
 
+	protected Project getRootProgect(DecoratorContext context) {
+		Project project = context.getProject();
+		while (project.isModule()) {
+			project = project.getRoot();
+		}
+		return project;
+	}
 }

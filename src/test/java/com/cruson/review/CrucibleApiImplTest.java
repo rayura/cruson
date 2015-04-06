@@ -11,8 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +19,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.sonar.api.config.Settings;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -34,23 +31,16 @@ public class CrucibleApiImplTest {
 	private CrucibleApiImpl api;
 
 	private String url = "CRUSON_HOST_URL";
-	private String repository = "CRUSON_REPOSITORY";
 	private String response = "response";
 	private String user = "CRUSON_HOST_USER";
 	private String password = "CRUSON_HOST_PASSWORD";
 
 	@Before
 	public void setUp() {
-		Map<String, String> properties = new HashMap<>();
-		properties.put(CruSonPlugin.CRUSON_HOST_URL, url);
-		properties.put(CruSonPlugin.CRUSON_HOST_USER, user);
-		properties.put(CruSonPlugin.CRUSON_HOST_PASSWORD, password);
-		properties.put(CruSonPlugin.CRUSON_REPOSITORY, repository);
-
-		Settings settings = new Settings();
-		settings.setProperties(properties);
-
-		api = new CrucibleApiImpl(settings, httpDownload);
+		api = new CrucibleApiImpl(httpDownload);
+		api.setUrl(url);
+		api.setPassword(password);
+		api.setLogin(user);
 		api = Mockito.spy(api);
 	}
 
@@ -92,13 +82,13 @@ public class CrucibleApiImplTest {
 
 		when(httpDownload.doPost(eq(url), eq(user), eq(password), eq(reviewer)))
 				.thenReturn(response);
-//		doReturn(null).when(api).convertResponse(response);
+		// doReturn(null).when(api).convertResponse(response);
 
 		api.addReviewer(reviewId, reviewer);
 
 		verify(httpDownload).doPost(eq(url), eq(user), eq(password),
 				eq(reviewer));
-//		verify(api).convertResponse(response);
+		// verify(api).convertResponse(response);
 	}
 
 	@Test
@@ -142,6 +132,7 @@ public class CrucibleApiImplTest {
 		String revision = "revision";
 		String reviewId = "reviewId";
 		String itemId = "itemId";
+		String repository = "repository";
 		url = url + String.format(api.LINK_REVIEW_ITEM, reviewId);
 
 		when(httpDownload.doPost(eq(url), eq(user), eq(password), anyString()))
@@ -153,7 +144,7 @@ public class CrucibleApiImplTest {
 		permaId.addProperty("id", reviewId);
 		doReturn(data).when(api).convertResponse(response);
 
-		assertEquals(reviewId, api.addReviewItem(reviewId, path, revision));
+		assertEquals(reviewId, api.addReviewItem(repository, reviewId, path, revision));
 
 		ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
 		verify(httpDownload).doPost(eq(url), eq(user), eq(password),
