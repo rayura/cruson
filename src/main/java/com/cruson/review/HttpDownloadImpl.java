@@ -18,66 +18,66 @@ import org.apache.http.util.EntityUtils;
 import org.sonar.api.ServerExtension;
 
 public class HttpDownloadImpl implements HttpDownload, ServerExtension {
-	private static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
+    private static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
 
-	private HttpClient httpClient;
+    private HttpClient httpClient;
 
-	public HttpDownloadImpl() {
-		httpClient = new DefaultHttpClient();
-	}
+    public HttpDownloadImpl() {
+        httpClient = new DefaultHttpClient();
+    }
 
-	@Override
-	public String doGet(String url, String user, String password)
-			throws IOException {
-		return doRequest(url, user, password, null);
-	}
+    @Override
+    public String doGet(String url, String user, String password)
+            throws IOException {
+        return doRequest(url, user, password, null);
+    }
 
-	@Override
-	public String doPost(String url, String user, String password,
-			String content) throws IOException {
-		return doRequest(url, user, password, content);
-	}
+    @Override
+    public String doPost(String url, String user, String password,
+            String content) throws IOException {
+        return doRequest(url, user, password, content);
+    }
 
-	protected String doRequest(String url, String user, String password,
-			String requestContent) throws IOException {
-		String responseContent = "";
-		HttpEntity entity = null;
-		try {
-			HttpRequestBase httpRequest;
-			if (requestContent == null) {
-				httpRequest = new HttpGet(url);
-			} else {
-				HttpPost httpPost = new HttpPost(url);
-				httpPost.setEntity(new StringEntity(requestContent));
-				httpRequest = httpPost;
-			}
+    protected String doRequest(String url, String user, String password,
+            String requestContent) throws IOException {
+        String responseContent = "";
+        HttpEntity entity = null;
+        try {
+            HttpRequestBase httpRequest;
+            if (requestContent == null) {
+                httpRequest = new HttpGet(url);
+            } else {
+                HttpPost httpPost = new HttpPost(url);
+                httpPost.setEntity(new StringEntity(requestContent));
+                httpRequest = httpPost;
+            }
 
-			httpRequest.addHeader(new BasicScheme().authenticate(
-					new UsernamePasswordCredentials(user, password),
-					httpRequest));
-			httpRequest.setHeader("Accept", CONTENT_TYPE_APPLICATION_JSON);
-			httpRequest
-					.setHeader("Content-Type", CONTENT_TYPE_APPLICATION_JSON);
+            httpRequest.addHeader(new BasicScheme().authenticate(
+                    new UsernamePasswordCredentials(user, password),
+                    httpRequest));
+            httpRequest.setHeader("Accept", CONTENT_TYPE_APPLICATION_JSON);
+            httpRequest
+                    .setHeader("Content-Type", CONTENT_TYPE_APPLICATION_JSON);
 
-			HttpResponse response = httpClient.execute(httpRequest);
-			entity = response.getEntity();
+            HttpResponse response = httpClient.execute(httpRequest);
+            entity = response.getEntity();
 
-			if (entity != null) {
-				responseContent = IOUtils.toString(entity.getContent());
-			}
-		} catch (IOException | AuthenticationException e) {
-			throw new IOException(e);
-		} finally {
-			EntityUtils.consume(entity);
-		}
-		return responseContent;
-	}
+            if (entity != null) {
+                responseContent = IOUtils.toString(entity.getContent());
+            }
+        } catch (IOException | AuthenticationException e) {
+            throw new IOException(e);
+        } finally {
+            EntityUtils.consume(entity);
+        }
+        return responseContent;
+    }
 
-	public HttpClient getHttpClient() {
-		return httpClient;
-	}
+    public HttpClient getHttpClient() {
+        return httpClient;
+    }
 
-	public void setHttpClient(HttpClient httpClient) {
-		this.httpClient = httpClient;
-	}
+    public void setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 }
