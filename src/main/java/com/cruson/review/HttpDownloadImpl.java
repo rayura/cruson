@@ -23,11 +23,13 @@ public class HttpDownloadImpl implements HttpDownload, ServerExtension {
 		httpClient = new DefaultHttpClient();
 	}
 
+	@Override
 	public String doGet(String url, String user, String password)
 			throws Exception {
 		return doRequest(url, user, password, null);
 	}
 
+	@Override
 	public String doPost(String url, String user, String password,
 			String content) throws Exception {
 		return doRequest(url, user, password, content);

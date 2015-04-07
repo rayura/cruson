@@ -31,6 +31,7 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		this.httpDownload = httpDownload;
 	}
 
+	@Override
 	public boolean isUserExist(String user) throws Exception {
 		try {
 			String content = httpDownload.doGet(
@@ -41,12 +42,14 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		}
 	}
 
+	@Override
 	public void addReviewer(String reviewId, String reviewer) throws Exception {
 		httpDownload.doPost(
 				url + String.format(LINK_REVIEW_REVIEWER, reviewId), login,
 				password, reviewer);
 	}
 
+	@Override
 	public String createReview(String project, String message,
 			String description, String author) throws Exception {
 		JsonObject data = new JsonObject();
@@ -68,6 +71,7 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		return data.getAsJsonObject("permaId").get("id").getAsString();
 	}
 
+	@Override
 	public void startReview(String reviewId) throws Exception {
 		String content = httpDownload.doPost(
 				url + String.format(LINK_REVIEW_START, reviewId), login,
@@ -75,6 +79,7 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		convertResponse(content);
 	}
 
+	@Override
 	public String addReviewItem(String repository, String reviewId,
 			String path, String revision) throws Exception {
 		JsonObject data = new JsonObject();
@@ -92,6 +97,7 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 		return data.getAsJsonObject("permId").get("id").getAsString();
 	}
 
+	@Override
 	public void addReviewComment(String reviewId, String itemId,
 			String message, String line) throws Exception {
 		JsonObject data = new JsonObject();
