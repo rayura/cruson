@@ -15,6 +15,9 @@ public class NotificationFields {
 	public static final String SCM_AUTHOR = "scmAuthor";
 	public static final String RULE_KEY = "ruleKey";
 
+	private NotificationFields() {
+	}
+
 	public static String getAuthorName(String scmAuthor) {
 		return StringUtils.substringBefore(scmAuthor, "@");
 	}

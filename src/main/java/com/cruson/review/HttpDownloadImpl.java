@@ -1,8 +1,11 @@
 package com.cruson.review;
 
+import java.io.IOException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -25,18 +28,18 @@ public class HttpDownloadImpl implements HttpDownload, ServerExtension {
 
 	@Override
 	public String doGet(String url, String user, String password)
-			throws Exception {
+			throws IOException {
 		return doRequest(url, user, password, null);
 	}
 
 	@Override
 	public String doPost(String url, String user, String password,
-			String content) throws Exception {
+			String content) throws IOException {
 		return doRequest(url, user, password, content);
 	}
 
 	protected String doRequest(String url, String user, String password,
-			String requestContent) throws Exception {
+			String requestContent) throws IOException {
 		String responseContent = "";
 		HttpEntity entity = null;
 		try {
@@ -62,8 +65,8 @@ public class HttpDownloadImpl implements HttpDownload, ServerExtension {
 			if (entity != null) {
 				responseContent = IOUtils.toString(entity.getContent());
 			}
-		} catch (Exception e) {
-			throw e;
+		} catch (IOException | AuthenticationException e) {
+			throw new IOException(e);
 		} finally {
 			EntityUtils.consume(entity);
 		}

@@ -47,10 +47,12 @@ public class NewIssueResourceDecorator implements Decorator {
 		this.notificationsManager = notificationsManager;
 	}
 
+	@Override
 	public boolean shouldExecuteOnProject(Project project) {
 		return true;
 	}
 
+	@Override
 	public void decorate(Resource resource, DecoratorContext context) {
 		for (Issue issue : issueCache.byComponent(resource.getEffectiveKey())) {
 			if (supports(issue)) {
