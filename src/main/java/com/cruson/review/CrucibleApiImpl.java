@@ -42,7 +42,7 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
                     url + String.format(LINK_USER_INFO, user), login, password);
             return convertResponse(content).get(USER_INFO_DATA) != null;
         } catch (IOException e) {
-            LOG.warn(e.getMessage());
+            LOG.warn(e.getMessage(), e);
             return false;
         }
     }
