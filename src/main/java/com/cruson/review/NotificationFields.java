@@ -1,5 +1,8 @@
 package com.cruson.review;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
 
 public class NotificationFields {
@@ -14,11 +17,14 @@ public class NotificationFields {
     public static final String SCM_DATE = "scmDate";
     public static final String SCM_AUTHOR = "scmAuthor";
     public static final String RULE_KEY = "ruleKey";
+    private static final Pattern EMAIL_PREFIX = Pattern
+            .compile("([_\\w-\\+\\.]*)@");
 
     private NotificationFields() {
     }
 
     public static String getAuthorName(String scmAuthor) {
-        return StringUtils.substringBefore(scmAuthor, "@");
+        Matcher matcher = EMAIL_PREFIX.matcher(scmAuthor);
+        return matcher.find() ? matcher.group(1) : null;
     }
 }

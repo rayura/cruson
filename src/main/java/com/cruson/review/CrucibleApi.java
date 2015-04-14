@@ -5,6 +5,9 @@ import java.io.IOException;
 public interface CrucibleApi {
     public boolean isUserExist(String user) throws IOException;
 
+    public String getUserByCommiter(String repository, String commiter)
+            throws IOException;
+
     public void addReviewer(String reviewId, String user) throws IOException;
 
     public String createReview(String project, String message,
@@ -17,5 +20,4 @@ public interface CrucibleApi {
 
     public void addReviewComment(String reviewId, String itemId,
             String message, String line) throws IOException;
-
 }

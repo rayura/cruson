@@ -1,45 +1,63 @@
 package com.cruson.review;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.ServerExtension;
+import org.sonar.core.profiling.Profiling;
+import org.sonar.core.profiling.Profiling.Level;
+import org.sonar.core.profiling.StopWatch;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
     private static final Logger LOG = LoggerFactory
             .getLogger(CrucibleApiImpl.class);
 
+    protected static final String LINK_COMMITER_INFO = "/rest-service/users-v1/%s/%s";
     protected static final String LINK_USER_INFO = "/rest-service/users-v1/%s";
     protected static final String LINK_REVIEW_DATA = "/rest-service/reviews-v1";
     protected static final String LINK_REVIEW_REVIEWER = "/rest-service/reviews-v1/%s/reviewers";
-    protected static final String LINK_REVIEW_ITEM = "/rest-service/reviews-v1/%s/reviewitems";
+    // protected static final String LINK_REVIEW_ITEM =
+    // "/rest-service/reviews-v1/%s/reviewitems";
+    protected static final String LINK_REVIEW_ITEM = "/rest-service/reviews-v1/%s/reviewitems/revisions";
     protected static final String LINK_REVIEW_COMMENT = "/rest-service/reviews-v1/%s/reviewitems/%s/comments";
     protected static final String LINK_REVIEW_STATE = "/rest-service/reviews-v1/%s/transition?action=";
     protected static final String LINK_REVIEW_START = LINK_REVIEW_STATE
             + "action:approveReview";
 
     protected static final String USER_INFO_DATA = "userData";
+    protected static final String USER_NAME = "userName";
     protected static final String ERROR_MESSAGE = "stacktrace";
 
     private HttpDownload httpDownload;
+    private Profiling profiling;
     private String url;
     private String login;
     private String password;
 
-    public CrucibleApiImpl(HttpDownload httpDownload) {
+    public CrucibleApiImpl(HttpDownload httpDownload, Profiling profiling) {
         this.httpDownload = httpDownload;
+        this.profiling = profiling;
     }
 
     @Override
     public boolean isUserExist(String user) throws IOException {
         try {
-            String content = httpDownload.doGet(
-                    url + String.format(LINK_USER_INFO, user), login, password);
+            StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+
+            String urlStr = url + String.format(LINK_USER_INFO, user);
+            String content = httpDownload.doGet(urlStr, login, password);
+
+            watch.stop("isUserExist request: " + urlStr + " responce:"
+                    + content);
+
             return convertResponse(content).get(USER_INFO_DATA) != null;
         } catch (IOException e) {
             LOG.warn(e.getMessage(), e);
@@ -48,11 +66,35 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
     }
 
     @Override
+    public String getUserByCommiter(String repository, String commiter)
+            throws IOException {
+        try {
+            StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+            String urlStr = url
+                    + String.format(LINK_COMMITER_INFO, repository,
+                            URLEncoder.encode(commiter, "ASCII"));
+
+            String content = httpDownload.doGet(urlStr, login, password);
+
+            watch.stop("getUserByCommiter request: " + urlStr + " responce:"
+                    + content);
+
+            return convertResponse(content).get(USER_NAME).getAsString();
+        } catch (IOException e) {
+            LOG.warn(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    @Override
     public void addReviewer(String reviewId, String reviewer)
             throws IOException {
-        httpDownload.doPost(
-                url + String.format(LINK_REVIEW_REVIEWER, reviewId), login,
-                password, reviewer);
+        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        String urlStr = url + String.format(LINK_REVIEW_REVIEWER, reviewId);
+
+        httpDownload.doPost(urlStr, login, password, reviewer);
+
+        watch.stop("addReviewer request: " + urlStr + " data:" + reviewer);
     }
 
     @Override
@@ -70,8 +112,14 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
         reviewData.add("author", authorObj);
         authorObj.addProperty("userName", author);
 
-        String content = httpDownload.doPost(url + LINK_REVIEW_DATA, login,
-                password, data.toString());
+        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        String urlStr = url + LINK_REVIEW_DATA;
+
+        String content = httpDownload.doPost(urlStr, login, password,
+                data.toString());
+
+        watch.stop("createReview request: " + urlStr + " data:" + data
+                + " responce:" + content);
 
         data = convertResponse(content);
         return data.getAsJsonObject("permaId").get("id").getAsString();
@@ -79,28 +127,47 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 
     @Override
     public void startReview(String reviewId) throws IOException {
-        String content = httpDownload.doPost(
-                url + String.format(LINK_REVIEW_START, reviewId), login,
-                password, "");
+        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        String urlStr = url + String.format(LINK_REVIEW_START, reviewId);
+
+        String content = httpDownload.doPost(urlStr, login, password, "");
+
+        watch.stop("startReview request: " + urlStr + " responce:" + content);
+
         convertResponse(content);
     }
 
     @Override
     public String addReviewItem(String repository, String reviewId,
             String path, String revision) throws IOException {
+        JsonArray revisions = new JsonArray();
+        revisions.add(new JsonPrimitive(revision));
+
+        JsonObject revisionData = new JsonObject();
+        revisionData.addProperty("source", repository);
+        revisionData.addProperty("path", path);
+        revisionData.add("rev", revisions);
+
+        JsonArray revisionDatas = new JsonArray();
+        revisionDatas.add(revisionData);
+
         JsonObject data = new JsonObject();
+        data.add("revisionData", revisionDatas);
 
-        data.addProperty("repositoryName", repository);
-        data.addProperty("fromPath", path);
-        data.addProperty("fromRevision", revision);
-        data.addProperty("toPath", path);
-        data.addProperty("toRevision", revision);
+        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        String urlStr = url + String.format(LINK_REVIEW_ITEM, reviewId);
 
-        String content = httpDownload.doPost(
-                url + String.format(LINK_REVIEW_ITEM, reviewId), login,
-                password, data.toString());
+        String content = httpDownload.doPost(urlStr, login, password,
+                data.toString());
+
+        watch.stop("addReviewItem request: " + urlStr + " data:" + data
+                + " responce:" + content);
+
         data = convertResponse(content);
-        return data.getAsJsonObject("permId").get("id").getAsString();
+        return data.getAsJsonObject("reviewItems").getAsJsonArray("reviewItem")
+                .get(0).getAsJsonObject().getAsJsonObject("permId").get("id")
+                .getAsString();
+
     }
 
     @Override
@@ -111,9 +178,17 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
         if (StringUtils.isNotBlank(line)) {
             data.addProperty("toLineRange", line);
         }
-        String content = httpDownload.doPost(
-                url + String.format(LINK_REVIEW_COMMENT, reviewId, itemId),
-                login, password, data.toString());
+
+        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        String urlStr = url
+                + String.format(LINK_REVIEW_COMMENT, reviewId, itemId);
+
+        String content = httpDownload.doPost(urlStr, login, password,
+                data.toString());
+
+        watch.stop("addReviewComment request: " + urlStr + " data:" + data
+                + " responce:" + content);
+
         convertResponse(content);
     }
 

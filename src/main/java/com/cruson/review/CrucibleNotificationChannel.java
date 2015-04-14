@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.config.Settings;
 import org.sonar.api.notifications.Notification;
 import org.sonar.api.notifications.NotificationChannel;
+import org.sonar.core.profiling.Profiling;
 import org.sonar.core.properties.PropertiesDao;
 import org.sonar.core.properties.PropertyDto;
 
@@ -45,9 +47,7 @@ public class CrucibleNotificationChannel extends NotificationChannel {
 
     protected void createReview(Settings settings, CrucibleApi api,
             Notification notification) throws IOException {
-        boolean authorExist = api.isUserExist(NotificationFields
-                .getAuthorName(notification
-                        .getFieldValue(NotificationFields.SCM_AUTHOR)));
+        String user = searchUser(settings, api, notification);
 
         String reviewId = api.createReview(
                 settings.getString(CruSonPlugin.CRUSON_PROJECT),
@@ -55,10 +55,8 @@ public class CrucibleNotificationChannel extends NotificationChannel {
                 makeDescription(notification),
                 settings.getString(CruSonPlugin.CRUSON_HOST_LOGIN));
 
-        if (authorExist) {
-            api.addReviewer(reviewId, NotificationFields
-                    .getAuthorName(notification
-                            .getFieldValue(NotificationFields.SCM_AUTHOR)));
+        if (StringUtils.isNotBlank(user)) {
+            api.addReviewer(reviewId, user);
         }
 
         String itemId = api.addReviewItem(settings
@@ -73,6 +71,23 @@ public class CrucibleNotificationChannel extends NotificationChannel {
                 notification.getFieldValue(NotificationFields.LINE));
 
         api.startReview(reviewId);
+    }
+
+    protected String searchUser(Settings settings, CrucibleApi api,
+            Notification notification) throws IOException {
+        String scmCommiter = notification
+                .getFieldValue(NotificationFields.SCM_AUTHOR);
+        String crucibleUser = api
+                .getUserByCommiter(
+                        settings.getString(CruSonPlugin.CRUSON_REPOSITORY),
+                        scmCommiter);
+        if (StringUtils.isBlank(crucibleUser)) {
+            String author = NotificationFields.getAuthorName(scmCommiter);
+            if (api.isUserExist(author)) {
+                crucibleUser = author;
+            }
+        }
+        return crucibleUser;
     }
 
     protected String makeDescription(Notification notification) {
@@ -102,7 +117,8 @@ public class CrucibleNotificationChannel extends NotificationChannel {
     }
 
     public CrucibleApi buildCrucibleApi(Settings settings) {
-        CrucibleApiImpl api = new CrucibleApiImpl(httpDownload);
+        CrucibleApiImpl api = new CrucibleApiImpl(httpDownload, new Profiling(
+                settings));
         api.setUrl(settings.getString(CruSonPlugin.CRUSON_HOST_URL));
         api.setLogin(settings.getString(CruSonPlugin.CRUSON_HOST_LOGIN));
         api.setPassword(settings.getString(CruSonPlugin.CRUSON_HOST_PASSWORD));
