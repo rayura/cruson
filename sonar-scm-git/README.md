@@ -1,1 +1,0 @@
-# sonar-scm-git
