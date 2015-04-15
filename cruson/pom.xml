@@ -5,7 +5,7 @@
 	<groupId>com.cruson</groupId>
 	<artifactId>review</artifactId>
 	<packaging>sonar-plugin</packaging>
-	<version>1.0</version>
+	<version>2.0</version>
 	<name>CruSonReview</name>
 	<url>http://maven.apache.org</url>
 	<properties>

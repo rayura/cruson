@@ -6,11 +6,11 @@
   <groupId>sonar.scm.parent</groupId>
   <artifactId>parentmodule</artifactId>
   <packaging>pom</packaging>
-  <version>1.0</version>
+  <version>2.0</version>
   <name>CruSon</name>
   <url>http://maven.apache.org</url>
   <modules>
     <module>cruson</module>
-    <module>sonar-scm-activity</module>
+    <module>sonar-scm-git</module>
   </modules>
 </project>
