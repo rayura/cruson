@@ -3,10 +3,10 @@
     http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cruson</groupId>
-	<artifactId>review</artifactId>
+	<artifactId>cruson</artifactId>
 	<packaging>sonar-plugin</packaging>
 	<version>2.0</version>
-	<name>CruSonReview</name>
+	<name>CruSon</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
