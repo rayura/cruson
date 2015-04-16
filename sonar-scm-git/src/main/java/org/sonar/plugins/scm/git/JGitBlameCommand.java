@@ -136,8 +136,10 @@ public class JGitBlameCommand extends BlameCommand {
           + " Source commit: " + blameResult.getSourceCommit(i));
         return;
       }
+      String author = blameResult.getSourceAuthor(i).getName() 
+              + " <" + blameResult.getSourceAuthor(i).getEmailAddress() + ">";
       lines.add(new org.sonar.api.batch.scm.BlameLine().date(blameResult.getSourceAuthor(i).getWhen()).revision(blameResult.getSourceCommit(i).getName())
-        .author(blameResult.getSourceAuthor(i).getEmailAddress()));
+        .author(author));
     }
     if (lines.size() == inputFile.lines() - 1) {
       // SONARPLUGINS-3097 Git do not report blame on last empty line

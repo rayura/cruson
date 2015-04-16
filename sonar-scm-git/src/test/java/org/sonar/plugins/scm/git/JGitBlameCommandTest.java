@@ -90,7 +90,7 @@ public class JGitBlameCommandTest {
 
     Date revisionDate = DateUtils.parseDateTime("2012-07-17T16:12:48+0200");
     String revision = "6b3aab35a3ea32c1636fee56f996e677653c48ea";
-    String author = "david@gageot.net";
+    String author = "David Gageot <david@gageot.net>";
     verify(blameResult).blameResult(inputFile,
       Arrays.asList(
         new BlameLine().revision(revision).date(revisionDate).author(author),
@@ -166,7 +166,8 @@ public class JGitBlameCommandTest {
 
     Date revisionDate = DateUtils.parseDateTime("2012-07-17T16:12:48+0200");
     String revision = "6b3aab35a3ea32c1636fee56f996e677653c48ea";
-    String author = "david@gageot.net";
+    String author = "David Gageot <david@gageot.net>";
+    
     verify(blameResult).blameResult(inputFile,
       Arrays.asList(
         new BlameLine().revision(revision).date(revisionDate).author(author),
