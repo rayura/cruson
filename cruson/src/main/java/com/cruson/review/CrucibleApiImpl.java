@@ -7,9 +7,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.ServerExtension;
-import org.sonar.core.profiling.Profiling;
-import org.sonar.core.profiling.Profiling.Level;
-import org.sonar.core.profiling.StopWatch;
+import org.sonar.api.utils.log.Loggers;
+import org.sonar.api.utils.log.Profiler;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -37,25 +36,24 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
     protected static final String ERROR_MESSAGE = "stacktrace";
 
     private HttpDownload httpDownload;
-    private Profiling profiling;
     private String url;
     private String login;
     private String password;
 
-    public CrucibleApiImpl(HttpDownload httpDownload, Profiling profiling) {
+    public CrucibleApiImpl(HttpDownload httpDownload) {
         this.httpDownload = httpDownload;
-        this.profiling = profiling;
     }
 
     @Override
     public boolean isUserExist(String user) throws IOException {
         try {
-            StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+            Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                    .start();
 
             String urlStr = url + String.format(LINK_USER_INFO, user);
             String content = httpDownload.doGet(urlStr, login, password);
 
-            watch.stop("isUserExist request: " + urlStr + " responce:"
+            profiler.stopDebug("isUserExist request: " + urlStr + " responce:"
                     + content);
 
             return convertResponse(content).get(USER_INFO_DATA) != null;
@@ -69,15 +67,16 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
     public String getUserByCommiter(String repository, String commiter)
             throws IOException {
         try {
-            StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+            Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                    .start();
             String urlStr = url
                     + String.format(LINK_COMMITER_INFO, repository,
                             URLEncoder.encode(commiter, "ASCII"));
 
             String content = httpDownload.doGet(urlStr, login, password);
 
-            watch.stop("getUserByCommiter request: " + urlStr + " responce:"
-                    + content);
+            profiler.stopDebug("getUserByCommiter request: " + urlStr
+                    + " responce:" + content);
 
             return convertResponse(content).get(USER_NAME).getAsString();
         } catch (IOException e) {
@@ -89,12 +88,14 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
     @Override
     public void addReviewer(String reviewId, String reviewer)
             throws IOException {
-        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                .start();
         String urlStr = url + String.format(LINK_REVIEW_REVIEWER, reviewId);
 
         httpDownload.doPost(urlStr, login, password, reviewer);
 
-        watch.stop("addReviewer request: " + urlStr + " data:" + reviewer);
+        profiler.stopDebug("addReviewer request: " + urlStr + " data:"
+                + reviewer);
     }
 
     @Override
@@ -112,13 +113,14 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
         reviewData.add("author", authorObj);
         authorObj.addProperty("userName", author);
 
-        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                .start();
         String urlStr = url + LINK_REVIEW_DATA;
 
         String content = httpDownload.doPost(urlStr, login, password,
                 data.toString());
 
-        watch.stop("createReview request: " + urlStr + " data:" + data
+        profiler.stopDebug("createReview request: " + urlStr + " data:" + data
                 + " responce:" + content);
 
         data = convertResponse(content);
@@ -127,12 +129,14 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
 
     @Override
     public void startReview(String reviewId) throws IOException {
-        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                .start();
         String urlStr = url + String.format(LINK_REVIEW_START, reviewId);
 
         String content = httpDownload.doPost(urlStr, login, password, "");
 
-        watch.stop("startReview request: " + urlStr + " responce:" + content);
+        profiler.stopDebug("startReview request: " + urlStr + " responce:"
+                + content);
 
         convertResponse(content);
     }
@@ -154,13 +158,14 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
         JsonObject data = new JsonObject();
         data.add("revisionData", revisionDatas);
 
-        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                .start();
         String urlStr = url + String.format(LINK_REVIEW_ITEM, reviewId);
 
         String content = httpDownload.doPost(urlStr, login, password,
                 data.toString());
 
-        watch.stop("addReviewItem request: " + urlStr + " data:" + data
+        profiler.stopDebug("addReviewItem request: " + urlStr + " data:" + data
                 + " responce:" + content);
 
         data = convertResponse(content);
@@ -179,15 +184,16 @@ public class CrucibleApiImpl implements CrucibleApi, ServerExtension {
             data.addProperty("toLineRange", line);
         }
 
-        StopWatch watch = profiling.start("CrucibleApiImpl", Level.BASIC);
+        Profiler profiler = Profiler.createIfDebug(Loggers.get(getClass()))
+                .start();
         String urlStr = url
                 + String.format(LINK_REVIEW_COMMENT, reviewId, itemId);
 
         String content = httpDownload.doPost(urlStr, login, password,
                 data.toString());
 
-        watch.stop("addReviewComment request: " + urlStr + " data:" + data
-                + " responce:" + content);
+        profiler.stopDebug("addReviewComment request: " + urlStr + " data:"
+                + data + " responce:" + content);
 
         convertResponse(content);
     }

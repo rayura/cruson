@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.config.Settings;
 import org.sonar.api.notifications.Notification;
 import org.sonar.api.notifications.NotificationChannel;
-import org.sonar.core.profiling.Profiling;
 import org.sonar.core.properties.PropertiesDao;
 import org.sonar.core.properties.PropertyDto;
 
@@ -117,8 +116,7 @@ public class CrucibleNotificationChannel extends NotificationChannel {
     }
 
     public CrucibleApi buildCrucibleApi(Settings settings) {
-        CrucibleApiImpl api = new CrucibleApiImpl(httpDownload, new Profiling(
-                settings));
+        CrucibleApiImpl api = new CrucibleApiImpl(httpDownload);
         api.setUrl(settings.getString(CruSonPlugin.CRUSON_HOST_URL));
         api.setLogin(settings.getString(CruSonPlugin.CRUSON_HOST_LOGIN));
         api.setPassword(settings.getString(CruSonPlugin.CRUSON_HOST_PASSWORD));

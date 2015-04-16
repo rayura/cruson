@@ -19,8 +19,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.sonar.api.config.Settings;
-import org.sonar.core.profiling.Profiling;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -40,7 +38,7 @@ public class CrucibleApiImplTest {
 
     @Before
     public void setUp() {
-        api = new CrucibleApiImpl(httpDownload, new Profiling(new Settings()));
+        api = new CrucibleApiImpl(httpDownload);
         api.setUrl(url);
         api.setPassword(password);
         api.setLogin(user);
