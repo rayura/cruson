@@ -7,17 +7,16 @@
     <version>19</version>
     <relativePath />
   </parent>
-  <artifactId>sonar-scm-git-plugin</artifactId>
-  <name>SonarQube :: Plugins :: SCM :: Git</name>
+  <artifactId>sonar-scm-git-ex-plugin</artifactId>
+  <name>SonarQube :: Plugins :: SCM :: Git :: Ex</name>
   <packaging>sonar-plugin</packaging>
-  <version>1.0</version>
-  <description>Git SCM Provider.</description>
-  <url>http://redirect.sonarsource.com/plugins/scmgit.html</url>
+  <version>1.0.ex</version>
+  <description>Git SCM Ex Provider.</description>
   <inceptionYear>2014</inceptionYear>
+  <url>https://github.com/rayura/cruson/tree/master/sonar-scm-git</url>
 
   <organization>
-    <name>SonarSource</name>
-    <url>http://www.sonarsource.com</url>
+    <name>any</name>
   </organization>
 
   <licenses>
@@ -28,37 +27,12 @@
     </license>
   </licenses>
 
-  <developers>
-    <developer>
-      <id>henryju</id>
-      <name>Julien Henry</name>
-      <timezone>+1</timezone>
-    </developer>
-  </developers>
-
-  <scm>
-    <connection>scm:git:git@github.com:SonarCommunity/sonar-scm-git.git</connection>
-    <developerConnection>scm:git:git@github.com:SonarCommunity/sonar-scm-git.git</developerConnection>
-    <url>https://github.com/SonarCommunity/sonar-scm-git</url>
-    <tag>1.0</tag>
-  </scm>
-  
-  <issueManagement>
-    <system>jira</system>
-    <url>http://jira.codehaus.org/browse/SONARSCGIT</url>
-  </issueManagement>
-  
-  <ciManagement>
-    <system>Cloudbees</system>
-    <url>https://sonarplugins.ci.cloudbees.com/job/scm-git/</url>
-  </ciManagement>
-
   <properties>
+    <license.mailto>ra.yura@gmail.com</license.mailto>
     <sonar.buildVersion>5.0</sonar.buildVersion>
     <sonar.pluginName>Git</sonar.pluginName>
     <sonar.pluginClass>org.sonar.plugins.scm.git.GitPlugin</sonar.pluginClass>
   </properties>
-
 
   <dependencies>
     <dependency>
@@ -105,5 +79,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>

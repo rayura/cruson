@@ -1,7 +1,7 @@
 /*
- * SonarQube :: Plugins :: SCM :: Git
- * Copyright (C) 2014 SonarSource
- * dev@sonar.codehaus.org
+ * SonarQube :: Plugins :: SCM :: Git :: Ex
+ * Copyright (C) 2014 any
+ * ra.yura@gmail.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
