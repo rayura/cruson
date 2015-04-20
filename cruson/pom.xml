@@ -7,7 +7,7 @@
 	<packaging>sonar-plugin</packaging>
 	<version>2.0</version>
 	<name>CruSon</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/rayura/cruson</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.version>5.1</sonar.version>
